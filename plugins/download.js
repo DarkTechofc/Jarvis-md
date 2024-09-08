@@ -117,25 +117,22 @@ System({
 });
 
 System({
-    pattern: "insta",
-    fromMe: isPrivate,
-    desc: "Download Instagram media",
-    type: "download",
+    pattern: 'insta ?(.*)',
+    fromMe: true,
+    desc: 'instagram downloader',
+    type: 'download',
 }, async (message, match) => {
-   match = await extractUrlFromMessage(match || message.reply_message.text);
-   if (!match) return await message.reply('_Provide an Instagram URL_');
-   if (!isInstaUrl(match)) return await message.send("_Please provide a valid Instagram URL_");
-
-   const result = await instaDl(match);
-   if (result.length === 0) return await message.send("_No media found for this Instagram URL_");
-
-   if (match.startsWith('https://www.instagram.com/p/')) {
-       for (const video of result) {
-           await message.sendFromUrl(video.download_link, { caption: "_*Download 🤍*_" });
-       }
-   } else if (result.length > 1) {
-       await message.sendFromUrl(result[1].download_link, { caption: "_*Download 🤍*_" });
-   }
+    const url = await extractUrlFromMessage(match || message.reply_message.text);
+    if (!url) return await message.reply('_Please provide an Instagram *url*'); 
+    if (!isUrl(url)) return await message.reply("_Please provide a valid Instagram *url*");
+    if (!url.includes("instagram.com")) return await message.reply("_Please provide a valid Instagram *url*");
+    const data = await instaDl(url);
+    if (!data || data.length === 0) return await message.reply("_No content found at the provided URL.");
+    for (const imageUrl of data) {
+        if (imageUrl) {
+            await message.sendFromUrl(imageUrl);
+        }
+    }
 });
 
 System({
